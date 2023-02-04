@@ -11,11 +11,8 @@ import {
   Res,
 } from '@nestjs/common';
 
-import {
-  CreateUserDto,
-  UpdatePasswordDto,
-  ReceivedUserDto,
-} from './dto/user.dto';
+import { CreateUserDto, UpdatePasswordDto } from './dto/user.dto';
+import { ReceivedUserDto } from './dto/user.interface';
 import { UsersService } from './users.service';
 
 @Controller('user')
