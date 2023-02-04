@@ -11,14 +11,18 @@ import {
   Res,
 } from '@nestjs/common';
 
-import { CreateUserDto, User, UpdatePasswordDto } from './dto/user.dto';
+import {
+  CreateUserDto,
+  UpdatePasswordDto,
+  ReceivedUserDto,
+} from './dto/user.dto';
 import { UsersService } from './users.service';
 
 @Controller('user')
 export class UsersController {
   constructor(private usersService: UsersService) {}
   @Get()
-  async getAll(): Promise<User[]> {
+  async getAll(): Promise<ReceivedUserDto[]> {
     return this.usersService.findAll();
   }
 

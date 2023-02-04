@@ -1,12 +1,17 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { User, CreateUserDto, UpdatePasswordDto } from './dto/user.dto';
+import {
+  User,
+  CreateUserDto,
+  UpdatePasswordDto,
+  ReceivedUserDto,
+} from './dto/user.dto';
 import { v4 as uuid, validate } from 'uuid';
 
 @Injectable()
 export class UsersService {
   private users: Array<User> = [];
 
-  async create(user: CreateUserDto): Promise<User> {
+  async create(user: CreateUserDto): Promise<ReceivedUserDto> {
     const newUser = {
       ...user,
       id: uuid(),
@@ -15,14 +20,21 @@ export class UsersService {
       updatedAt: new Date().getTime(),
     };
     this.users.push(newUser);
-    return newUser;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...resUser } = newUser;
+    return resUser;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.users;
+  async findAll(): Promise<ReceivedUserDto[]> {
+    const resUsers = this.users.map((i) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...resUser } = i;
+      return resUser;
+    });
+    return resUsers;
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<ReceivedUserDto> {
     if (!validate(id))
       throw new HttpException(
         'userId is invalid (not uuid)',
@@ -31,13 +43,15 @@ export class UsersService {
     const user = this.users.find((i) => i.id === id);
     if (!user)
       throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
-    return user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...resUser } = user;
+    return resUser;
   }
 
   async updateById(
     id: string,
     updatePasswordDto: UpdatePasswordDto,
-  ): Promise<User> {
+  ): Promise<ReceivedUserDto> {
     if (!validate(id))
       throw new HttpException(
         'userId is invalid (not uuid)',
@@ -57,9 +71,12 @@ export class UsersService {
       ...user,
       password: updatePasswordDto.newPassword,
       version: user.version + 1,
+      updatedAt: new Date().getTime(),
     };
     this.users = [...this.users, updatedUser];
-    return updatedUser;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...resUser } = updatedUser;
+    return resUser;
   }
 
   async deleteById(id: string) {
