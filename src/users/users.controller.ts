@@ -2,14 +2,17 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Param,
   HttpException,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
-import { CreateUserDto, User } from './dto/user.dto';
+
+import { CreateUserDto, User, UpdatePasswordDto } from './dto/user.dto';
 import { UsersService } from './users.service';
-import { validate } from 'uuid';
 
 @Controller('user')
 export class UsersController {
@@ -20,17 +23,20 @@ export class UsersController {
   }
 
   @Get(':id')
-  async GetUserById(@Param('id') id: string) {
-    if (!validate(id))
-      throw new HttpException(
-        'userId is invalid (not uuid)',
-        HttpStatus.BAD_REQUEST,
-      );
-    const user = await this.usersService.findOne(id);
-
-    if (!user)
-      throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
-    return user;
+  async getUserById(@Param('id') id: string) {
+    try {
+      return await this.usersService.findOne(id);
+    } catch (error) {
+      const status =
+        error instanceof HttpException
+          ? error.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      const message =
+        error instanceof HttpException
+          ? error.getResponse()
+          : 'INTERNAL_SERVER_ERROR';
+      throw new HttpException(message, status);
+    }
   }
 
   @Post()
@@ -38,16 +44,41 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  /*@Put()
-  Update(
-    @Body() updatePasswordDto: UpdatePasswordDto,
+  @Put(':id')
+  async update(
     @Param('id') id: string,
+    @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.usersService.updateById(id, updatePasswordDto);
+    try {
+      return await this.usersService.updateById(id, updatePasswordDto);
+    } catch (error) {
+      const status =
+        error instanceof HttpException
+          ? error.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      const message =
+        error instanceof HttpException
+          ? error.getResponse()
+          : 'INTERNAL_SERVER_ERROR';
+      throw new HttpException(message, status);
+    }
   }
-  
+
   @Delete(':id')
-  DeleteProduct(@Param('id') id: string) {
-    return this.usersService.delete(id);
-  } */
+  async delete(@Param('id') id: string, @Res() res) {
+    try {
+      await this.usersService.deleteById(id);
+      res.status(HttpStatus.NO_CONTENT).send();
+    } catch (error) {
+      const status =
+        error instanceof HttpException
+          ? error.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      const message =
+        error instanceof HttpException
+          ? error.getResponse()
+          : 'INTERNAL_SERVER_ERROR';
+      throw new HttpException(message, status);
+    }
+  }
 }
