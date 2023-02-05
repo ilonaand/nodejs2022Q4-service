@@ -11,22 +11,22 @@ import {
   Res,
 } from '@nestjs/common';
 
-import { CreateArtistDto, UpdateArtistDto } from './dto/artist.dto';
-import { Artist } from './dto/artist.interface';
-import { ArtistsService } from './artists.service';
+import { CreateTrackDto, UpdateTrackDto } from './dto/track.dto';
+import { Track } from './dto/track.interface';
+import { TracksService } from './tracks.service';
 
-@Controller('artist')
-export class ArtistsController {
-  constructor(private artistsService: ArtistsService) {}
+@Controller('track')
+export class TracksController {
+  constructor(private tracksService: TracksService) {}
   @Get()
-  async getAll(): Promise<Artist[]> {
-    return this.artistsService.findAll();
+  async getAll(): Promise<Track[]> {
+    return this.tracksService.findAll();
   }
 
   @Get(':id')
-  async getartistById(@Param('id') id: string) {
+  async getAlbumById(@Param('id') id: string) {
     try {
-      return await this.artistsService.findOne(id);
+      return await this.tracksService.findOne(id);
     } catch (error) {
       const status =
         error instanceof HttpException
@@ -41,17 +41,17 @@ export class ArtistsController {
   }
 
   @Post()
-  async create(@Body() createArtistDto: CreateArtistDto) {
-    return this.artistsService.create(createArtistDto);
+  async create(@Body() createTrackDto: CreateTrackDto) {
+    return this.tracksService.create(createTrackDto);
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() updateArtistDto: UpdateArtistDto,
+    @Body() updateTrackDto: UpdateTrackDto,
   ) {
     try {
-      return await this.artistsService.updateById(id, updateArtistDto);
+      return await this.tracksService.updateById(id, updateTrackDto);
     } catch (error) {
       const status =
         error instanceof HttpException
@@ -68,7 +68,7 @@ export class ArtistsController {
   @Delete(':id')
   async delete(@Param('id') id: string, @Res() res) {
     try {
-      await this.artistsService.deleteById(id);
+      await this.tracksService.deleteById(id);
       res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
       const status =

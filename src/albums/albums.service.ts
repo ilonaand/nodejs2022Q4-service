@@ -1,5 +1,6 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto/album.dto';
+import { TracksService } from '../tracks/tracks.service';
 
 import { Album } from './dto/album.interface';
 import { v4 as uuid, validate } from 'uuid';
@@ -7,6 +8,8 @@ import { v4 as uuid, validate } from 'uuid';
 @Injectable()
 export class AlbumsService {
   private Albums: Array<Album> = [];
+  @Inject(TracksService)
+  private trackService: TracksService;
 
   async create(Album: CreateAlbumDto): Promise<Album> {
     const newAlbum = {
@@ -53,6 +56,8 @@ export class AlbumsService {
       artistId: updateAlbumDto.artistId,
     };
 
+    this.Albums = [...this.Albums, updatedAlbum];
+
     return updatedAlbum;
   }
 
@@ -68,6 +73,16 @@ export class AlbumsService {
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
 
     this.Albums.splice(AlbumIndex, 1);
+
+    const tracks = (await this.trackService.findAll()).filter(
+      (track) => track.albumId === id,
+    );
+
+    tracks.forEach(async (track) => {
+      const { id, ...trackDto } = track;
+      const newDto = { ...trackDto, albumId: null };
+      await this.trackService.updateById(id, newDto);
+    });
     return;
   }
 }

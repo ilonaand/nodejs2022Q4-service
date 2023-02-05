@@ -48,10 +48,10 @@ export class AlbumsController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() updatePasswordDto: UpdateAlbumDto,
+    @Body() updateAlbumDto: UpdateAlbumDto,
   ) {
     try {
-      return await this.albumsService.updateById(id, updatePasswordDto);
+      return await this.albumsService.updateById(id, updateAlbumDto);
     } catch (error) {
       const status =
         error instanceof HttpException

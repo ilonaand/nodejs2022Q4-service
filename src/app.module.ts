@@ -10,9 +10,10 @@ import { ArtistsController } from './artists/artists.controller';
 import { AlbumsController } from './albums/albums.controller';
 import { AlbumsModule } from './albums/albums.module';
 import { AlbumsService } from './albums/albums.service';
+import { TracksModule } from './tracks/tracks.module';
 
 @Module({
-  imports: [UsersModule, ArtistsModule, AlbumsModule],
+  imports: [UsersModule, ArtistsModule, AlbumsModule, TracksModule],
   controllers: [
     AppController,
     UsersController,
