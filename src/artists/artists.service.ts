@@ -1,12 +1,16 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { CreateArtistDto, UpdateArtistDto } from './dto/artist.dto';
+import { AlbumsService } from '../albums/albums.service';
 
 import { Artist } from './dto/artist.interface';
 import { v4 as uuid, validate } from 'uuid';
+import { Album } from 'src/albums/dto/album.interface';
 
 @Injectable()
 export class ArtistsService {
   private artists: Array<Artist> = [];
+  @Inject(AlbumsService)
+  private albumService: AlbumsService;
 
   async create(artist: CreateArtistDto): Promise<Artist> {
     const newArtist = {
@@ -70,6 +74,17 @@ export class ArtistsService {
       throw new HttpException("artist doesn't exist", HttpStatus.NOT_FOUND);
 
     this.artists.splice(artistIndex, 1);
+
+    const albums: Album[] = (await this.albumService.findAll()).filter(
+      (album) => album.artistId === id,
+    );
+
+    albums.forEach((album) => {
+      const { id, ...albumDto } = album;
+      const newDto = { ...albumDto, artistId: null };
+      this.albumService.updateById(id, newDto);
+    });
+
     return;
   }
 }
