@@ -30,10 +30,11 @@ export class AlbumsService {
         'AlbumId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const Album = this.Albums.find((i) => i.id === id);
-    if (!Album)
+    const album = this.Albums.find((i) => i.id === id);
+
+    if (!album)
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
-    return Album;
+    return album;
   }
 
   async updateById(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
