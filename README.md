@@ -9,7 +9,11 @@
 
 ```
 git clone {repository URL}
+
 ```
+## Choose branch
+
+Choose branch Dev
 
 ## Installing NPM modules
 
