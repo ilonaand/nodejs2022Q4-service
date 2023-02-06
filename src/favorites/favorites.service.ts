@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  forwardRef,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 
 import { AlbumsService } from '../albums/albums.service';
 import { ArtistsService } from '../artists/artists.service';
@@ -21,7 +15,7 @@ export class FavoritesService {
   };
   @Inject(ArtistsService)
   private artistService: ArtistsService;
-  @Inject(forwardRef(() => AlbumsService))
+  @Inject(AlbumsService)
   private albumService: AlbumsService;
   @Inject(TracksService)
   private trackService: TracksService;
