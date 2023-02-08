@@ -2,12 +2,11 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
   Param,
-  ParseUUIDPipe,
   Post,
   HttpStatus,
   HttpException,
+  Res,
 } from '@nestjs/common';
 
 import { FavoritesService } from './favorites.service';
@@ -17,7 +16,7 @@ export class FavoritesController {
   constructor(private favoritesService: FavoritesService) {}
 
   @Post('/track/:id')
-  addTrackToFavorites(@Param('id', ParseUUIDPipe) id: string) {
+  addTrackToFavorites(@Param('id') id: string) {
     try {
       return this.favoritesService.addTrackToFavorites(id);
     } catch (error) {
@@ -34,10 +33,10 @@ export class FavoritesController {
   }
 
   @Delete('/track/:id')
-  @HttpCode(204)
-  deleteTrack(@Param('id', ParseUUIDPipe) id: string) {
+  deleteTrack(@Param('id') id: string, @Res() res) {
     try {
-      return this.favoritesService.deleteTrackFromFavorites(id);
+      this.favoritesService.deleteTrackFromFavorites(id);
+      res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
       const status =
         error instanceof HttpException
@@ -52,7 +51,7 @@ export class FavoritesController {
   }
 
   @Post('/album/:id')
-  addAlbumToFavorites(@Param('id', ParseUUIDPipe) id: string): Promise<string> {
+  addAlbumToFavorites(@Param('id') id: string): Promise<string> {
     try {
       return this.favoritesService.addAlbumToFavorites(id);
     } catch (error) {
@@ -69,10 +68,10 @@ export class FavoritesController {
   }
 
   @Delete('/album/:id')
-  @HttpCode(204)
-  deleteAlbum(@Param('id', ParseUUIDPipe) id: string) {
+  deleteAlbum(@Param('id') id: string, @Res() res) {
     try {
-      return this.favoritesService.deleteAlbumFromFavorites(id);
+      this.favoritesService.deleteAlbumFromFavorites(id);
+      res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
       const status =
         error instanceof HttpException
@@ -87,9 +86,7 @@ export class FavoritesController {
   }
 
   @Post('/artist/:id')
-  addArtistToFavorites(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<string> {
+  addArtistToFavorites(@Param('id') id: string): Promise<string> {
     try {
       return this.favoritesService.addArtistToFavorites(id);
     } catch (error) {
@@ -106,10 +103,10 @@ export class FavoritesController {
   }
 
   @Delete('/artist/:id')
-  @HttpCode(204)
-  deleteArtist(@Param('id') id: string) {
+  deleteArtist(@Param('id') id: string, @Res() res) {
     try {
-      return this.favoritesService.deleteArtistFromFavorites(id);
+      this.favoritesService.deleteArtistFromFavorites(id);
+      res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
       const status =
         error instanceof HttpException

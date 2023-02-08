@@ -1,14 +1,16 @@
 import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto/album.dto';
-import { TracksService } from '../tracks/tracks.service';
 
 import { Album } from './dto/album.interface';
 import { v4 as uuid, validate } from 'uuid';
+import { TracksService } from '../tracks/tracks.service';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AlbumsService {
-  private Albums: Array<Album> = [];
-  @Inject(TracksService)
+  @Inject()
+  private database: DatabaseService;
+  @Inject()
   private trackService: TracksService;
 
   async create(Album: CreateAlbumDto): Promise<Album> {
@@ -16,12 +18,12 @@ export class AlbumsService {
       ...Album,
       id: uuid(),
     };
-    this.Albums.push(newAlbum);
+    this.database.entities.albums.push(newAlbum);
     return newAlbum;
   }
 
   async findAll(): Promise<Album[]> {
-    return this.Albums;
+    return this.database.entities.albums;
   }
 
   async findOne(id: string): Promise<Album> {
@@ -30,7 +32,7 @@ export class AlbumsService {
         'AlbumId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const album = this.Albums.find((i) => i.id === id);
+    const album = this.database.entities.albums.find((i) => i.id === id);
 
     if (!album)
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
@@ -43,12 +45,14 @@ export class AlbumsService {
         'AlbumId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const Album = this.Albums.find((i) => i.id === id);
+    const Album = this.database.entities.albums.find((i) => i.id === id);
 
     if (!Album)
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
 
-    this.Albums = this.Albums.filter((i) => i !== Album);
+    this.database.entities.albums = this.database.entities.albums.filter(
+      (i) => i !== Album,
+    );
 
     const updatedAlbum = {
       ...Album,
@@ -57,7 +61,10 @@ export class AlbumsService {
       artistId: updateAlbumDto.artistId,
     };
 
-    this.Albums = [...this.Albums, updatedAlbum];
+    this.database.entities.albums = [
+      ...this.database.entities.albums,
+      updatedAlbum,
+    ];
 
     return updatedAlbum;
   }
@@ -69,11 +76,13 @@ export class AlbumsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    const AlbumIndex = this.Albums.findIndex((i) => i.id === id);
+    const AlbumIndex = this.database.entities.albums.findIndex(
+      (i) => i.id === id,
+    );
     if (AlbumIndex < 0)
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
 
-    this.Albums.splice(AlbumIndex, 1);
+    this.database.entities.albums.splice(AlbumIndex, 1);
 
     const tracks = (await this.trackService.findAll()).filter(
       (track) => track.albumId === id,

@@ -1,10 +1,7 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-
-import { AlbumsService } from '../albums/albums.service';
-import { ArtistsService } from '../artists/artists.service';
-import { TracksService } from '../tracks/tracks.service';
 import { Favorites, FavoritesRepsonse } from './dto/favorites.interface';
 import { validate } from 'uuid';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class FavoritesService {
@@ -13,12 +10,8 @@ export class FavoritesService {
     albums: [],
     tracks: [],
   };
-  @Inject(ArtistsService)
-  private artistService: ArtistsService;
-  @Inject(AlbumsService)
-  private albumService: AlbumsService;
-  @Inject(TracksService)
-  private trackService: TracksService;
+  @Inject()
+  private databaseService: DatabaseService;
 
   async addTrackToFavorites(id: string): Promise<string> {
     if (!validate(id))
@@ -27,15 +20,14 @@ export class FavoritesService {
         HttpStatus.BAD_REQUEST,
       );
 
-    try {
-      await this.trackService.findOne(id);
-    } catch (error) {
+    if (!this.databaseService.entities.tracks.find((i) => i.id === id)) {
       throw new HttpException(
-        "track doesn't exist",
+        "artist doesn't exist",
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
 
+    if (this.favorites.tracks.includes(id)) return;
     this.favorites.tracks.push(id);
     return 'Track added';
   }
@@ -48,6 +40,9 @@ export class FavoritesService {
       );
 
     const tracks = [...this.favorites.tracks];
+    if (tracks.length === 0) {
+      throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
+    }
     const newTracks = tracks.filter((trackId) => trackId !== id);
 
     if (tracks.length === newTracks.length) {
@@ -64,15 +59,13 @@ export class FavoritesService {
         HttpStatus.BAD_REQUEST,
       );
 
-    try {
-      await this.albumService.findOne(id);
-    } catch (error) {
+    if (!this.databaseService.entities.albums.find((i) => i.id === id)) {
       throw new HttpException(
-        "track doesn't exist",
+        "artist doesn't exist",
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-
+    if (this.favorites.albums.includes(id)) return;
     this.favorites.albums.push(id);
     return 'Album added';
   }
@@ -85,6 +78,9 @@ export class FavoritesService {
       );
 
     const albums = [...this.favorites.albums];
+    if (albums.length === 0) {
+      throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
+    }
     const newAlbums = albums.filter((albumId) => albumId !== id);
 
     if (albums.length === newAlbums.length) {
@@ -100,15 +96,13 @@ export class FavoritesService {
         'artistId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    try {
-      await this.artistService.findOne(id);
-    } catch (error) {
+    if (!this.databaseService.entities.artists.find((i) => i.id === id)) {
       throw new HttpException(
         "artist doesn't exist",
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-
+    if (this.favorites.artists.includes(id)) return;
     this.favorites.artists.push(id);
     return 'Artist added';
   }
@@ -120,6 +114,9 @@ export class FavoritesService {
         HttpStatus.BAD_REQUEST,
       );
     const artists = [...this.favorites.artists];
+    if (artists.length === 0) {
+      throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
+    }
     const newArtists = artists.filter((artistId) => artistId !== id);
 
     if (artists.length === newArtists.length) {
@@ -135,16 +132,26 @@ export class FavoritesService {
     const tracksIds = this.favorites.tracks;
 
     const artistsPromise = artistsIds.map((id) =>
-      this.artistService.findOne(id),
+      this.databaseService.entities.artists.find((i) => i.id === id),
     );
 
-    const albumsPromise = albumsIds.map((id) => this.albumService.findOne(id));
+    const albumsPromise = albumsIds.map((id) =>
+      this.databaseService.entities.albums.find((i) => i.id === id),
+    );
 
-    const tracksPromise = tracksIds.map((id) => this.trackService.findOne(id));
+    const tracksPromise = tracksIds.map((id) =>
+      this.databaseService.entities.tracks.find((i) => i.id === id),
+    );
 
-    const artists = await Promise.all(artistsPromise);
-    const albums = await Promise.all(albumsPromise);
-    const tracks = await Promise.all(tracksPromise);
+    const artists = (await Promise.all(artistsPromise)).filter(
+      (item) => item !== undefined,
+    );
+    const albums = (await Promise.all(albumsPromise)).filter(
+      (item) => item !== undefined,
+    );
+    const tracks = (await Promise.all(tracksPromise)).filter(
+      (item) => item !== undefined,
+    );
 
     const favorites: FavoritesRepsonse = {
       artists: artists,
