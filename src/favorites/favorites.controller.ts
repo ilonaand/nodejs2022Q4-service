@@ -15,20 +15,23 @@ import { FavoritesService } from './favorites.service';
 export class FavoritesController {
   constructor(private favoritesService: FavoritesService) {}
 
+  private getError(error: any) {
+    const status =
+      error instanceof HttpException
+        ? error.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const message =
+      error instanceof HttpException
+        ? error.getResponse()
+        : 'INTERNAL_SERVER_ERROR';
+    throw new HttpException(message, status);
+  }
   @Post('/track/:id')
   addTrackToFavorites(@Param('id') id: string) {
     try {
       return this.favoritesService.addTrackToFavorites(id);
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -38,15 +41,7 @@ export class FavoritesController {
       this.favoritesService.deleteTrackFromFavorites(id);
       res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -55,15 +50,7 @@ export class FavoritesController {
     try {
       return this.favoritesService.addAlbumToFavorites(id);
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -73,15 +60,7 @@ export class FavoritesController {
       this.favoritesService.deleteAlbumFromFavorites(id);
       res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -90,15 +69,7 @@ export class FavoritesController {
     try {
       return this.favoritesService.addArtistToFavorites(id);
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -108,15 +79,7 @@ export class FavoritesController {
       this.favoritesService.deleteArtistFromFavorites(id);
       res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -125,15 +88,7 @@ export class FavoritesController {
     try {
       return this.favoritesService.getAllFavorites();
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 }

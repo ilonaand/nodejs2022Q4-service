@@ -143,15 +143,9 @@ export class FavoritesService {
       this.databaseService.entities.tracks.find((i) => i.id === id),
     );
 
-    const artists = (await Promise.all(artistsPromise)).filter(
-      (item) => item !== undefined,
-    );
-    const albums = (await Promise.all(albumsPromise)).filter(
-      (item) => item !== undefined,
-    );
-    const tracks = (await Promise.all(tracksPromise)).filter(
-      (item) => item !== undefined,
-    );
+    const artists = (await Promise.all(artistsPromise)).filter(Boolean);
+    const albums = (await Promise.all(albumsPromise)).filter(Boolean);
+    const tracks = (await Promise.all(tracksPromise)).filter(Boolean);
 
     const favorites: FavoritesRepsonse = {
       artists: artists,

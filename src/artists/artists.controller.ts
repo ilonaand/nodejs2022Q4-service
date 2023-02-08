@@ -18,6 +18,19 @@ import { ArtistsService } from './artists.service';
 @Controller('artist')
 export class ArtistsController {
   constructor(private artistsService: ArtistsService) {}
+
+  private getError(error: any) {
+    const status =
+      error instanceof HttpException
+        ? error.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const message =
+      error instanceof HttpException
+        ? error.getResponse()
+        : 'INTERNAL_SERVER_ERROR';
+    throw new HttpException(message, status);
+  }
+
   @Get()
   async getAll(): Promise<Artist[]> {
     return this.artistsService.findAll();
@@ -28,15 +41,7 @@ export class ArtistsController {
     try {
       return await this.artistsService.findOne(id);
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -53,15 +58,7 @@ export class ArtistsController {
     try {
       return await this.artistsService.updateById(id, updateArtistDto);
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 
@@ -71,15 +68,7 @@ export class ArtistsController {
       await this.artistsService.deleteById(id);
       res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      const status =
-        error instanceof HttpException
-          ? error.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message =
-        error instanceof HttpException
-          ? error.getResponse()
-          : 'INTERNAL_SERVER_ERROR';
-      throw new HttpException(message, status);
+      this.getError(error);
     }
   }
 }
