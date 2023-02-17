@@ -4,7 +4,7 @@ import { CreateAlbumDto, UpdateAlbumDto } from './dto/album.dto';
 import { Album } from './dto/album.interface';
 import { v4 as uuid, validate } from 'uuid';
 import { TracksService } from '../tracks/tracks.service';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class AlbumsService {

@@ -1,6 +1,6 @@
-import { Artist } from 'src/artists/dto/artist.interface';
-import { Album } from 'src/albums/dto/album.interface';
-import { Track } from 'src/tracks/dto/track.interface';
+import { Artist } from '../../artists/dto/artist.interface';
+import { Album } from '../../albums/dto/album.interface';
+import { Track } from '../../tracks/dto/track.interface';
 
 export interface Entities {
   artists: Artist[];

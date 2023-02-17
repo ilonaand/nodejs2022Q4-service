@@ -3,11 +3,11 @@ import { CreateArtistDto, UpdateArtistDto } from './dto/artist.dto';
 
 import { Artist } from './dto/artist.interface';
 import { v4 as uuid, validate } from 'uuid';
-import { Album } from 'src/albums/dto/album.interface';
-import { Track } from 'src/tracks/dto/track.interface';
-import { DatabaseService } from 'src/database/database.service';
-import { AlbumsService } from 'src/albums/albums.service';
-import { TracksService } from 'src/tracks/tracks.service';
+import { Album } from '../albums/dto/album.interface';
+import { Track } from '../tracks/dto/track.interface';
+import { DatabaseService } from '../database/database.service';
+import { AlbumsService } from '../albums/albums.service';
+import { TracksService } from '../tracks/tracks.service';
 
 @Injectable()
 export class ArtistsService {

@@ -3,7 +3,7 @@ import { CreateTrackDto, UpdateTrackDto } from './dto/track.dto';
 
 import { Track } from './dto/track.interface';
 import { v4 as uuid, validate } from 'uuid';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class TracksService {
