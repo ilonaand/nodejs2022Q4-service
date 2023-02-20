@@ -17,7 +17,7 @@
     "docker:start": "docker compose start",
     "docker:stop": "docker compose stop",
     "docker:test": "docker exec -it server npm run test",
-    "docker:scan:app": "docker scan server_image",
+    "docker:scan:server": "docker scan ilonaand/server_image",
     "docker:scan:db": "docker scan postgres:latest",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest --config ./test/jest-e2e.json",

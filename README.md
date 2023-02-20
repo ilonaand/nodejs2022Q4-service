@@ -86,7 +86,7 @@ For more information, visit: https://code.visualstudio.com/docs/editor/debugging
 
     - Run npm run docker:test to run the e2e tests inside the docker
 
-    - Run npm run docker:scan:app to scan the application for vulnerabilities
+    - Run npm run docker:scan:server to scan the application for vulnerabilities
 
     - Run npm run docker:scan:db to scan the database for vulnerabilities
 
