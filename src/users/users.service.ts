@@ -1,60 +1,54 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto, UpdatePasswordDto } from './dto/user.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from './entity/users.entity';
 
-import { User, ReceivedUserDto } from './dto/user.interface';
-import { v4 as uuid, validate } from 'uuid';
+import { ReceivedUserDto } from './dto/user.interface';
+import { validate } from 'uuid';
 
 @Injectable()
 export class UsersService {
-  private users: Array<User> = [];
+  constructor(
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
+  ) {}
 
-  async create(user: CreateUserDto): Promise<ReceivedUserDto> {
-    const newUser = {
-      ...user,
-      id: uuid(),
+  async create(userDto: CreateUserDto): Promise<UserEntity> {
+    const user = await this.usersRepository.save({
+      ...userDto,
       version: 1,
-      createdAt: new Date().getTime(),
-      updatedAt: new Date().getTime(),
-    };
-    this.users.push(newUser);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...resUser } = newUser;
-    return resUser;
+    });
+    return await this.findOne(user.id);
   }
 
   async findAll(): Promise<ReceivedUserDto[]> {
-    const resUsers = this.users.map((i) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...resUser } = i;
-      return resUser;
-    });
-    return resUsers;
+    return this.usersRepository.find();
   }
 
-  async findOne(id: string): Promise<ReceivedUserDto> {
+  async findOne(id: string): Promise<UserEntity> {
     if (!validate(id))
       throw new HttpException(
         'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const user = this.users.find((i) => i.id === id);
+    const user = await this.usersRepository.findOne({ where: { id } });
     if (!user)
       throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...resUser } = user;
-    return resUser;
+    return user;
   }
 
   async updateById(
     id: string,
     updatePasswordDto: UpdatePasswordDto,
-  ): Promise<ReceivedUserDto> {
+  ): Promise<UserEntity> {
     if (!validate(id))
       throw new HttpException(
         'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const user = this.users.find((i) => i.id === id);
+    const user = await this.findOne(id);
 
     if (!user)
       throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
@@ -62,18 +56,12 @@ export class UsersService {
     if (user.password !== updatePasswordDto.oldPassword)
       throw new HttpException('oldPassword is wrong', HttpStatus.FORBIDDEN);
 
-    this.users = this.users.filter((i) => i !== user);
-
-    const updatedUser = {
-      ...user,
+    await this.usersRepository.update(id, {
       password: updatePasswordDto.newPassword,
       version: user.version + 1,
       updatedAt: new Date().getTime(),
-    };
-    this.users = [...this.users, updatedUser];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...resUser } = updatedUser;
-    return resUser;
+    });
+    return await this.findOne(user.id);
   }
 
   async deleteById(id: string) {
@@ -83,11 +71,10 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
 
-    const userIndex = this.users.findIndex((i) => i.id === id);
-    if (userIndex < 0)
+    const user = await this.findOne(id);
+    if (!user)
       throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
 
-    this.users.splice(userIndex, 1);
-    return;
+    return await this.usersRepository.delete({ id: user.id });
   }
 }

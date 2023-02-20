@@ -43,10 +43,7 @@ class ConfigService {
       logging: true,
       logger: 'file',
 
-      entities: [__dirname + '/**/**/*.entity.{ts,js}'],
-
-      migrationsTableName: 'migration',
-
+      entities: [__dirname + './**/**/entity/*.entity.{ts,js}'],
       migrations: [__dirname + './migrations/*.{ts,js}'],
     };
   }
