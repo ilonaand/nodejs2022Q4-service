@@ -10,6 +10,13 @@ services:
       dockerfile: dockerfile
     ports:
       - ${PORT}:${PORT}
+    environment:
+      - TYPEORM_CONNECTION=${TYPEORM_CONNECTION}
+      - TYPEORM_USERNAME=${TYPEORM_USERNAME}
+      - TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
+      - TYPEORM_DATABASE=${TYPEORM_DATABASE}
+      - TYPEORM_PORT=${TYPEORM_PORT}
+      - TYPEORM_HOST=database
     volumes:
       - ".:/app"
       - ./node_modules:/usr/app/node_modules
@@ -34,7 +41,7 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     ports:
-      - ${TYPEORM_PORT_POSTGRES}:${TYPEORM_PORT_POSTGRES}
+      - ${TYPEORM_PORT}:${TYPEORM_PORT}
     networks:
       - app_bridge
 
