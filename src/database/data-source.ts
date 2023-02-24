@@ -6,7 +6,7 @@ dotenv.config();
 export const dataSourceOptions: DataSourceOptions = {
   port: +process.env.TYPEORM_PORT,
   type: 'postgres',
-  host: process.env.TYPEORM_HOST,
+  host: 'db',
   database: process.env.TYPEORM_DATABASE,
   password: process.env.TYPEORM_PASSWORD,
   username: process.env.TYPEORM_USERNAME,
