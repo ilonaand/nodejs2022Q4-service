@@ -1,14 +1,17 @@
+import { hash } from 'bcrypt';
+import { Exclude, Transform } from 'class-transformer';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
+  VersionColumn,
+  BeforeUpdate,
 } from 'typeorm';
 
-import { Exclude } from 'class-transformer';
-
-@Entity()
+@Entity({ name: 'users' })
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -16,26 +19,24 @@ export class UserEntity {
   @Column()
   login: string;
 
+  @VersionColumn()
+  version: number;
+
+  @CreateDateColumn()
+  @Transform(({ value }) => new Date(value).getTime())
+  createdAt: number;
+
+  @UpdateDateColumn()
+  @Transform(({ value }) => new Date(value).getTime())
+  updatedAt: number;
+
   @Exclude()
   @Column()
   password: string;
 
-  @Column()
-  version: number;
-
-  @CreateDateColumn({
-    transformer: {
-      from: (value: Date) => value.getTime(),
-      to: (value: Date) => value,
-    },
-  })
-  createdAt: number;
-
-  @UpdateDateColumn({
-    transformer: {
-      from: (value: Date) => value.getTime(),
-      to: (value: Date) => value,
-    },
-  })
-  updatedAt: number;
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword() {
+    this.password = await hash(this.password, 10);
+  }
 }
