@@ -1,43 +1,36 @@
-import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateArtistDto, UpdateArtistDto } from './dto/artist.dto';
 
-import { Artist } from './dto/artist.interface';
-import { v4 as uuid, validate } from 'uuid';
-import { Album } from '../albums/dto/album.interface';
-import { Track } from '../tracks/dto/track.interface';
-import { DatabaseService } from '../database/database.service';
-import { AlbumsService } from '../albums/albums.service';
-import { TracksService } from '../tracks/tracks.service';
+import { validate } from 'uuid';
+
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ArtistEntity } from './entity/artists.entity';
 
 @Injectable()
 export class ArtistsService {
-  @Inject()
-  private database: DatabaseService;
-  @Inject()
-  private tracksService: TracksService;
-  @Inject()
-  private albumsService: AlbumsService;
+  constructor(
+    @InjectRepository(ArtistEntity)
+    private readonly artistRepository: Repository<ArtistEntity>,
+  ) {}
 
-  async create(artist: CreateArtistDto): Promise<Artist> {
-    const newArtist = {
-      ...artist,
-      id: uuid(),
-    };
-    this.database.entities.artists.push(newArtist);
-    return newArtist;
+  async create(artist: CreateArtistDto): Promise<ArtistEntity> {
+    const newArtist = new ArtistEntity();
+    Object.assign(newArtist, artist);
+    return this.artistRepository.save(newArtist);
   }
 
-  async findAll(): Promise<Artist[]> {
-    return this.database.entities.artists;
+  async findAll(): Promise<ArtistEntity[]> {
+    return this.artistRepository.find();
   }
 
-  async findOne(id: string): Promise<Artist> {
+  async findOne(id: string): Promise<ArtistEntity> {
     if (!validate(id))
       throw new HttpException(
         'artistId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const artist = this.database.entities.artists.find((i) => i.id === id);
+    const artist = await this.artistRepository.findOneBy({ id });
     if (!artist)
       throw new HttpException("artist doesn't exist", HttpStatus.NOT_FOUND);
     return artist;
@@ -46,33 +39,19 @@ export class ArtistsService {
   async updateById(
     id: string,
     updateArtistDto: UpdateArtistDto,
-  ): Promise<Artist> {
+  ): Promise<ArtistEntity> {
     if (!validate(id))
       throw new HttpException(
         'artistId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const artist = this.database.entities.artists.find((i) => i.id === id);
+    const artist = await this.findOne(id);
 
     if (!artist)
       throw new HttpException("artist doesn't exist", HttpStatus.NOT_FOUND);
 
-    this.database.entities.artists = this.database.entities.artists.filter(
-      (i) => i !== artist,
-    );
-
-    const updatedArtist = {
-      ...artist,
-      name: updateArtistDto.name,
-      grammy: updateArtistDto.grammy,
-    };
-
-    this.database.entities.artists = [
-      ...this.database.entities.artists,
-      updatedArtist,
-    ];
-
-    return updatedArtist;
+    Object.assign(artist, updateArtistDto);
+    return await this.artistRepository.save(artist);
   }
 
   async deleteById(id: string) {
@@ -81,35 +60,8 @@ export class ArtistsService {
         'artistId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
+    const artist = await this.findOne(id);
 
-    const artistIndex = this.database.entities.artists.findIndex(
-      (i) => i.id === id,
-    );
-    if (artistIndex < 0)
-      throw new HttpException("artist doesn't exist", HttpStatus.NOT_FOUND);
-
-    this.database.entities.artists.splice(artistIndex, 1);
-
-    const tracks: Track[] = (await this.tracksService.findAll()).filter(
-      (track) => track.artistId === id,
-    );
-
-    tracks.forEach(async (track) => {
-      const { id, ...trackDto } = track;
-      const newDto = { ...trackDto, artistId: null };
-      await this.tracksService.updateById(id, newDto);
-    });
-
-    const albums: Album[] = (await this.albumsService.findAll()).filter(
-      (album) => album.artistId === id,
-    );
-
-    albums.forEach(async (album) => {
-      const { id, ...albumDto } = album;
-      const newDto = { ...albumDto, artistId: null };
-      await this.albumsService.updateById(id, newDto);
-    });
-
-    return;
+    await this.artistRepository.delete(artist.id);
   }
 }

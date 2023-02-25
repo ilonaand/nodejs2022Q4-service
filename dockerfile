@@ -24,4 +24,4 @@ COPY . .
 EXPOSE ${PORT}
 
 # run the app
-CMD ["npm", "run", "start:dev:nodemon"]
+CMD ["npm", "run", "start:dev"]

@@ -1,6 +1,6 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
-import { FavoritesModule } from '../favorites/favorites.module';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TrackEntity } from './entity/tracks.entity';
 import { TracksController } from './tracks.controller';
 import { TracksService } from './tracks.service';
 
@@ -8,9 +8,6 @@ import { TracksService } from './tracks.service';
   controllers: [TracksController],
   providers: [TracksService],
   exports: [TracksService],
-  imports: [
-    forwardRef(() => DatabaseModule),
-    forwardRef(() => FavoritesModule),
-  ],
+  imports: [TypeOrmModule.forFeature([TrackEntity])],
 })
 export class TracksModule {}
