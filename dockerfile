@@ -9,15 +9,14 @@ COPY ./tsconfig.json ./
 COPY ./tsconfig.build.json ./
 
 
+
 # Install our dependencies
-RUN  npm install --legacy-peer-deps
+RUN  npm install --force
 
-RUN  npm i nodemon -g
-
-RUN npm run build
+# RUN npm run build
 
 # Create app directory
-WORKDIR /app
+
 
 # Copy other project files to our container
 COPY . .

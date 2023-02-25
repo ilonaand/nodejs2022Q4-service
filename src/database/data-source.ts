@@ -4,7 +4,6 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 dotenv.config();
 
 export const dataSourceOptions: DataSourceOptions = {
-  port: +process.env.TYPEORM_PORT,
   type: 'postgres',
   host: 'db',
   database: process.env.TYPEORM_DATABASE,
@@ -13,7 +12,7 @@ export const dataSourceOptions: DataSourceOptions = {
   entities: ['dist/**/**/*.entity{.ts,.js}'],
   migrations: ['dist/migrations/*{.ts,.js}'],
   migrationsRun: true,
-  synchronize: false,
+  synchronize: true,
 };
 
 const dataSource = new DataSource(dataSourceOptions);
