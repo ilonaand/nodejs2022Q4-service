@@ -3,6 +3,7 @@ import { CreateUserDto, UpdatePasswordDto } from './dto/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entity/users.entity';
+import { compare } from 'bcrypt';
 
 import { ReceivedUserDto } from './dto/user.interface';
 import { validate } from 'uuid';
@@ -15,11 +16,10 @@ export class UsersService {
   ) {}
 
   async create(userDto: CreateUserDto): Promise<UserEntity> {
-    const user = await this.usersRepository.save({
-      ...userDto,
-      version: 1,
-    });
-    return await this.findOne(user.id);
+    const newUser = new UserEntity();
+    Object.assign(newUser, userDto);
+
+    return await this.usersRepository.save(newUser);
   }
 
   async findAll(): Promise<ReceivedUserDto[]> {
@@ -53,15 +53,13 @@ export class UsersService {
     if (!user)
       throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
 
-    if (user.password !== updatePasswordDto.oldPassword)
+    const isEqual = await compare(updatePasswordDto.oldPassword, user.password);
+    if (!isEqual)
       throw new HttpException('oldPassword is wrong', HttpStatus.FORBIDDEN);
 
-    await this.usersRepository.update(id, {
-      password: updatePasswordDto.newPassword,
-      version: user.version + 1,
-      updatedAt: new Date().getTime(),
-    });
-    return await this.findOne(user.id);
+    Object.assign(user, { password: updatePasswordDto.newPassword });
+
+    return await this.usersRepository.save(user);
   }
 
   async deleteById(id: string) {

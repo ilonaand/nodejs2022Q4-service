@@ -1,72 +1,59 @@
-import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAlbumDto, UpdateAlbumDto } from './dto/album.dto';
+import { AlbumEntity } from './entity/albums.entity';
 
 import { Album } from './dto/album.interface';
-import { v4 as uuid, validate } from 'uuid';
-import { TracksService } from '../tracks/tracks.service';
-import { DatabaseService } from '../database/database.service';
+import { validate } from 'uuid';
 
 @Injectable()
 export class AlbumsService {
-  @Inject()
-  private database: DatabaseService;
-  @Inject()
-  private trackService: TracksService;
+  constructor(
+    @InjectRepository(AlbumEntity)
+    private readonly albumRepository: Repository<AlbumEntity>,
+  ) {}
 
-  async create(Album: CreateAlbumDto): Promise<Album> {
-    const newAlbum = {
-      ...Album,
-      id: uuid(),
-    };
-    this.database.entities.albums.push(newAlbum);
-    return newAlbum;
+  async create(Album: CreateAlbumDto): Promise<AlbumEntity> {
+    const newAlbum = new AlbumEntity();
+    Object.assign(newAlbum, Album);
+    return this.albumRepository.save(newAlbum);
   }
 
   async findAll(): Promise<Album[]> {
-    return this.database.entities.albums;
+    return this.albumRepository.find();
   }
 
-  async findOne(id: string): Promise<Album> {
+  async findOne(id: string): Promise<AlbumEntity> {
     if (!validate(id))
       throw new HttpException(
         'AlbumId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const album = this.database.entities.albums.find((i) => i.id === id);
+    const album = await this.albumRepository.findOneBy({ id });
 
     if (!album)
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
     return album;
   }
 
-  async updateById(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
+  async updateById(
+    id: string,
+    updateAlbumDto: UpdateAlbumDto,
+  ): Promise<AlbumEntity> {
     if (!validate(id))
       throw new HttpException(
         'AlbumId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const Album = this.database.entities.albums.find((i) => i.id === id);
+    const Album = await this.findOne(id);
 
     if (!Album)
       throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
 
-    this.database.entities.albums = this.database.entities.albums.filter(
-      (i) => i !== Album,
-    );
+    Object.assign(Album, updateAlbumDto);
 
-    const updatedAlbum = {
-      ...Album,
-      name: updateAlbumDto.name,
-      year: updateAlbumDto.year,
-      artistId: updateAlbumDto.artistId,
-    };
-
-    this.database.entities.albums = [
-      ...this.database.entities.albums,
-      updatedAlbum,
-    ];
-
-    return updatedAlbum;
+    return this.albumRepository.save(Album);
   }
 
   async deleteById(id: string) {
@@ -76,23 +63,8 @@ export class AlbumsService {
         HttpStatus.BAD_REQUEST,
       );
 
-    const AlbumIndex = this.database.entities.albums.findIndex(
-      (i) => i.id === id,
-    );
-    if (AlbumIndex < 0)
-      throw new HttpException("Album doesn't exist", HttpStatus.NOT_FOUND);
+    const album = await this.findOne(id);
 
-    this.database.entities.albums.splice(AlbumIndex, 1);
-
-    const tracks = (await this.trackService.findAll()).filter(
-      (track) => track.albumId === id,
-    );
-
-    tracks.forEach(async (track) => {
-      const { id, ...trackDto } = track;
-      const newDto = { ...trackDto, albumId: null };
-      await this.trackService.updateById(id, newDto);
-    });
-    return;
+    await this.albumRepository.delete(album.id);
   }
 }
