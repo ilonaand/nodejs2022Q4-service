@@ -62,6 +62,6 @@ export class TracksService {
 
     const track = await this.findOne(id);
 
-    this.trackRepository.delete(track.id);
+    await this.trackRepository.delete(track.id);
   }
 }

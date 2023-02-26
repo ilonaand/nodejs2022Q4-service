@@ -6,7 +6,7 @@ import {
   Post,
   HttpStatus,
   HttpException,
-  Res,
+  HttpCode,
 } from '@nestjs/common';
 
 import { FavoritesService } from './favorites.service';
@@ -36,17 +36,17 @@ export class FavoritesController {
   }
 
   @Delete('/track/:id')
-  deleteTrack(@Param('id') id: string, @Res() res) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteTrack(@Param('id') id: string) {
     try {
-      this.favoritesService.deleteTrackFromFavorites(id);
-      res.status(HttpStatus.NO_CONTENT).send();
+      return this.favoritesService.deleteTrackFromFavorites(id);
     } catch (error) {
       this.getError(error);
     }
   }
 
   @Post('/album/:id')
-  addAlbumToFavorites(@Param('id') id: string): Promise<string> {
+  addAlbumToFavorites(@Param('id') id: string): Promise<void> {
     try {
       return this.favoritesService.addAlbumToFavorites(id);
     } catch (error) {
@@ -55,17 +55,17 @@ export class FavoritesController {
   }
 
   @Delete('/album/:id')
-  deleteAlbum(@Param('id') id: string, @Res() res) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAlbum(@Param('id') id: string) {
     try {
-      this.favoritesService.deleteAlbumFromFavorites(id);
-      res.status(HttpStatus.NO_CONTENT).send();
+      return this.favoritesService.deleteAlbumFromFavorites(id);
     } catch (error) {
       this.getError(error);
     }
   }
 
   @Post('/artist/:id')
-  addArtistToFavorites(@Param('id') id: string): Promise<string> {
+  addArtistToFavorites(@Param('id') id: string): Promise<void> {
     try {
       return this.favoritesService.addArtistToFavorites(id);
     } catch (error) {
@@ -74,10 +74,10 @@ export class FavoritesController {
   }
 
   @Delete('/artist/:id')
-  deleteArtist(@Param('id') id: string, @Res() res) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteArtist(@Param('id') id: string) {
     try {
-      this.favoritesService.deleteArtistFromFavorites(id);
-      res.status(HttpStatus.NO_CONTENT).send();
+      return this.favoritesService.deleteArtistFromFavorites(id);
     } catch (error) {
       this.getError(error);
     }

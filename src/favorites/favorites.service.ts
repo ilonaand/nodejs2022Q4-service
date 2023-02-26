@@ -1,158 +1,165 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { Favorites, FavoritesRepsonse } from './dto/favorites.interface';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { FavoritesRepsonse } from './dto/favorites.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { FavoritesEntity } from './entity/favorits.entity';
+import { AlbumEntity } from '../albums/entity/albums.entity';
+import { ArtistEntity } from '../artists/entity/artists.entity';
+import { TrackEntity } from '../tracks/entity/tracks.entity';
 import { validate } from 'uuid';
-import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class FavoritesService {
-  private favorites: Favorites = {
-    artists: [],
-    albums: [],
-    tracks: [],
-  };
-  @Inject()
-  private databaseService: DatabaseService;
+  constructor(
+    @InjectRepository(FavoritesEntity)
+    private readonly favoritesRepository: Repository<FavoritesEntity>,
+    @InjectRepository(AlbumEntity)
+    private readonly albumRepository: Repository<AlbumEntity>,
+    @InjectRepository(ArtistEntity)
+    private readonly artistRepository: Repository<ArtistEntity>,
+    @InjectRepository(TrackEntity)
+    private readonly trackRepository: Repository<TrackEntity>,
+  ) {}
 
-  async addTrackToFavorites(id: string): Promise<string> {
+  async addTrackToFavorites(id: string): Promise<void> {
     if (!validate(id))
       throw new HttpException(
-        'trackId is invalid (not uuid)',
+        'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
+    const track = await this.trackRepository.findOneBy({ id });
 
-    if (!this.databaseService.entities.tracks.find((i) => i.id === id)) {
+    if (!track) {
       throw new HttpException(
-        "artist doesn't exist",
+        "track doesn't exist",
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
 
-    if (this.favorites.tracks.includes(id)) return;
-    this.favorites.tracks.push(id);
-    return 'Track added';
+    await this.favoritesRepository.save({
+      trackId: id,
+    });
   }
 
-  async deleteTrackFromFavorites(id: string): Promise<string> {
+  async deleteTrackFromFavorites(id: string): Promise<void> {
     if (!validate(id))
       throw new HttpException(
-        'trackId is invalid (not uuid)',
+        'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
+    const track = await this.trackRepository.findOneBy({ id });
 
-    const tracks = [...this.favorites.tracks];
-    if (tracks.length === 0) {
+    if (!track) {
       throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
     }
-    const newTracks = tracks.filter((trackId) => trackId !== id);
 
-    if (tracks.length === newTracks.length) {
-      throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
-    }
-    this.favorites.tracks = newTracks;
-    return 'Track deleted';
+    await this.favoritesRepository.delete({
+      trackId: id,
+    });
   }
 
-  async addAlbumToFavorites(id: string): Promise<string> {
+  async addAlbumToFavorites(id: string): Promise<void> {
     if (!validate(id))
       throw new HttpException(
-        'albumId is invalid (not uuid)',
+        'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
+    const album = await this.albumRepository.findOneBy({ id });
 
-    if (!this.databaseService.entities.albums.find((i) => i.id === id)) {
+    if (!album) {
       throw new HttpException(
-        "artist doesn't exist",
+        "album doesn't exist",
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-    if (this.favorites.albums.includes(id)) return;
-    this.favorites.albums.push(id);
-    return 'Album added';
+
+    await this.favoritesRepository.save({
+      albumId: id,
+    });
   }
 
-  async deleteAlbumFromFavorites(id: string): Promise<string> {
+  async deleteAlbumFromFavorites(id: string): Promise<void> {
     if (!validate(id))
       throw new HttpException(
-        'albumId is invalid (not uuid)',
+        'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
+    const album = await this.albumRepository.findOneBy({ id });
 
-    const albums = [...this.favorites.albums];
-    if (albums.length === 0) {
-      throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
-    }
-    const newAlbums = albums.filter((albumId) => albumId !== id);
-
-    if (albums.length === newAlbums.length) {
+    if (!album) {
       throw new HttpException("album doesn't exist", HttpStatus.NOT_FOUND);
     }
-    this.favorites.albums = newAlbums;
-    return 'Album deleted';
+
+    await this.favoritesRepository.delete({
+      albumId: id,
+    });
   }
 
-  async addArtistToFavorites(id: string): Promise<string> {
+  async addArtistToFavorites(id: string): Promise<void> {
     if (!validate(id))
       throw new HttpException(
-        'artistId is invalid (not uuid)',
+        'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    if (!this.databaseService.entities.artists.find((i) => i.id === id)) {
+    const artist = await this.artistRepository.findOneBy({ id });
+
+    if (!artist) {
       throw new HttpException(
         "artist doesn't exist",
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-    if (this.favorites.artists.includes(id)) return;
-    this.favorites.artists.push(id);
-    return 'Artist added';
+
+    await this.favoritesRepository.save({
+      artistId: id,
+    });
   }
 
-  async deleteArtistFromFavorites(id: string): Promise<string> {
+  async deleteArtistFromFavorites(id: string): Promise<void> {
     if (!validate(id))
       throw new HttpException(
-        'artistId is invalid (not uuid)',
+        'userId is invalid (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
-    const artists = [...this.favorites.artists];
-    if (artists.length === 0) {
-      throw new HttpException("track doesn't exist", HttpStatus.NOT_FOUND);
-    }
-    const newArtists = artists.filter((artistId) => artistId !== id);
+    const artist = await this.artistRepository.findOneBy({ id });
 
-    if (artists.length === newArtists.length) {
+    if (!artist) {
       throw new HttpException("artist doesn't exist", HttpStatus.NOT_FOUND);
     }
-    this.favorites.artists = newArtists;
-    return 'Artist deleted';
+
+    await this.favoritesRepository.delete({
+      artistId: id,
+    });
   }
 
   async getAllFavorites(): Promise<FavoritesRepsonse> {
-    const artistsIds = this.favorites.artists;
-    const albumsIds = this.favorites.albums;
-    const tracksIds = this.favorites.tracks;
+    const favorites = await this.favoritesRepository.find({
+      relations: {
+        artist: true,
+        album: true,
+        track: true,
+      },
+    });
 
-    const artistsPromise = artistsIds.map((id) =>
-      this.databaseService.entities.artists.find((i) => i.id === id),
+    return favorites.reduce(
+      (arr, { artist, album, track }) => {
+        if (artist) {
+          arr.artists.push(artist);
+        }
+        if (album) {
+          arr.albums.push(album);
+        }
+        if (track) {
+          arr.tracks.push(track);
+        }
+
+        return arr;
+      },
+      {
+        artists: [],
+        albums: [],
+        tracks: [],
+      },
     );
-
-    const albumsPromise = albumsIds.map((id) =>
-      this.databaseService.entities.albums.find((i) => i.id === id),
-    );
-
-    const tracksPromise = tracksIds.map((id) =>
-      this.databaseService.entities.tracks.find((i) => i.id === id),
-    );
-
-    const artists = (await Promise.all(artistsPromise)).filter(Boolean);
-    const albums = (await Promise.all(albumsPromise)).filter(Boolean);
-    const tracks = (await Promise.all(tracksPromise)).filter(Boolean);
-
-    const favorites: FavoritesRepsonse = {
-      artists: artists,
-      albums: albums,
-      tracks: tracks,
-    };
-
-    return favorites;
   }
 }

@@ -8,7 +8,7 @@ import {
   Param,
   HttpException,
   HttpStatus,
-  Res,
+  HttpCode,
 } from '@nestjs/common';
 
 import { CreateTrackDto, UpdateTrackDto } from './dto/track.dto';
@@ -62,10 +62,10 @@ export class TracksController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string, @Res() res) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param('id') id: string) {
     try {
-      await this.tracksService.deleteById(id);
-      res.status(HttpStatus.NO_CONTENT).send();
+      return this.tracksService.deleteById(id);
     } catch (error) {
       this.getError(error);
     }

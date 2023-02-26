@@ -8,7 +8,7 @@ import {
   Param,
   HttpException,
   HttpStatus,
-  Res,
+  HttpCode,
 } from '@nestjs/common';
 
 import { CreateAlbumDto, UpdateAlbumDto } from './dto/album.dto';
@@ -63,10 +63,10 @@ export class AlbumsController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string, @Res() res) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param('id') id: string) {
     try {
-      await this.albumsService.deleteById(id);
-      res.status(HttpStatus.NO_CONTENT).send();
+      return await this.albumsService.deleteById(id);
     } catch (error) {
       this.getError(error);
     }
