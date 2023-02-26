@@ -75,4 +75,12 @@ export class UsersService {
 
     return await this.usersRepository.delete({ id: user.id });
   }
+
+  async findByLogin(login: string): Promise<UserEntity> {
+    const user = await this.usersRepository.findOne({ where: { login } });
+    if (!user)
+      throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return user;
+  }
 }
