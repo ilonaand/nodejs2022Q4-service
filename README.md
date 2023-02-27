@@ -13,9 +13,11 @@ git clone {repository URL}
 ```
 ## Choose branch
 
-Choose branch Dev2
+Choose branch Dev4
 
-### Containerization, Docker
+Run npm install
+
+### Authentication and Authorization
 
     - To deploy the application and the database to docker, run npm run docker:build
 
@@ -23,15 +25,13 @@ Choose branch Dev2
 
     - Run npm run docker:start to start the containers
 
-    - Run npm run docker:test to run the e2e tests inside the docker
+    - Run npm run docker:test:auth to run the e2e tests inside the docker
 
-    - Run npm run docker:scan:server to scan the application for vulnerabilities
-
-    - Run npm run docker:scan:db to scan the database for vulnerabilities
+    - Run npm run test:auth to run the e2e tests
 
     - The application is running on port 4000
 
     - The postgres database is running on port 5432
 
-    - PGAdmin is running on port 5050
+  
 
