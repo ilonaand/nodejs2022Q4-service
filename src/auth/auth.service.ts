@@ -2,13 +2,14 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../users/entity/users.entity';
+import { RefreshDto } from './dto/refresh.token';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,10 @@ export class AuthService {
 
   async login(userDto: CreateUserDto) {
     const user = await this.validateUser(userDto);
-    return this.generateToken(user);
+    return {
+      accessToken: await this.generateAccessToken(user),
+      refreshToken: await this.generateRefreshToken(user),
+    };
   }
 
   async signUp(userDto: CreateUserDto) {
@@ -32,17 +36,34 @@ export class AuthService {
     }
 
     const user = await this.userService.create(userDto);
-    return this.generateToken(user);
+    return user;
   }
 
-  private async generateToken(user: UserEntity) {
+  async generateAccessToken(user: UserEntity) {
     const payload = { login: user.login, id: user.id };
+    return this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET_KEY || 'JWT_SECRET_KEY',
+      expiresIn: process.env.TOKEN_EXPIRE_TIME || '1h',
+    });
+  }
+
+  async generateRefreshToken(user: UserEntity) {
+    const payload = { login: user.login, id: user.id };
+    return this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET_REFRESH_KEY || 'JWT_SECRET_REFRESH_KEY',
+      expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME || '24h',
+    });
+  }
+
+  async refresh(refreshData: RefreshDto) {
+    const user = this.jwtService.verify(refreshData.refreshToken);
     return {
-      token: this.jwtService.sign(payload),
+      accessToken: await this.generateAccessToken(user),
+      refreshToken: await this.generateRefreshToken(user),
     };
   }
 
-  private async validateUser(userDto: CreateUserDto) {
+  async validateUser(userDto: CreateUserDto) {
     const user = await this.userService.findByLogin(userDto.login);
     const passwordEquals = await bcrypt.compare(
       userDto.password,
@@ -51,8 +72,8 @@ export class AuthService {
     if (user && passwordEquals) {
       return user;
     }
-    throw new UnauthorizedException({
-      message: 'Некорректный login или пароль',
+    throw new ForbiddenException({
+      message: 'Uncorrect login or password',
     });
   }
 }
