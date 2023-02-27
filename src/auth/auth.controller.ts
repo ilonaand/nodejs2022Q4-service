@@ -27,7 +27,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Post('/signup')
   registration(@Body() userDto: CreateUserDto) {
-    return this.authService.signUp(userDto);
+    return this.authService.signup(userDto);
   }
 
   @Public()

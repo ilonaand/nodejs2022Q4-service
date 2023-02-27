@@ -1,13 +1,9 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as process from 'process';
 import { UserEntity } from '../users/entity/users.entity';
 import { RefreshDto } from './dto/refresh.token';
 
@@ -20,39 +16,37 @@ export class AuthService {
 
   async login(userDto: CreateUserDto) {
     const user = await this.validateUser(userDto);
-    return {
+    const token = {
       accessToken: await this.generateAccessToken(user),
       refreshToken: await this.generateRefreshToken(user),
     };
+    return token;
   }
 
-  async signUp(userDto: CreateUserDto) {
-    const candidate = await this.userService.findByLogin(userDto.login);
+  async signup(userDto: CreateUserDto) {
+    /*  const candidate = await this.userService.findByLogin(userDto.login);
     if (candidate) {
       throw new HttpException(
         'Пользователь с таким login существует',
         HttpStatus.BAD_REQUEST,
       );
-    }
-
-    const user = await this.userService.create(userDto);
+    } */
+    const hash = await bcrypt.hash(userDto.password, +process.env.CRYPT_SALT);
+    const user = await this.userService.create({
+      ...userDto,
+      password: hash,
+    });
     return user;
   }
 
   async generateAccessToken(user: UserEntity) {
     const payload = { login: user.login, id: user.id };
-    return this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET_KEY || 'JWT_SECRET_KEY',
-      expiresIn: process.env.TOKEN_EXPIRE_TIME || '1h',
-    });
+    return this.jwtService.sign(payload);
   }
 
   async generateRefreshToken(user: UserEntity) {
     const payload = { login: user.login, id: user.id };
-    return this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET_REFRESH_KEY || 'JWT_SECRET_REFRESH_KEY',
-      expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME || '24h',
-    });
+    return this.jwtService.sign(payload);
   }
 
   async refresh(refreshData: RefreshDto) {
@@ -69,6 +63,7 @@ export class AuthService {
       userDto.password,
       user.password,
     );
+
     if (user && passwordEquals) {
       return user;
     }

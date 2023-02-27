@@ -17,6 +17,7 @@
     "docker:start": "docker compose start",
     "docker:stop": "docker compose stop",
     "docker:test": "docker exec -it server npm run test",
+    "docker:test:auth": "docker exec -it server npm run test:auth",
     "docker:scan:server": "docker scan ilonaand/server_image",
     "docker:scan:db": "docker scan postgres:latest",
     "typeorm": "npm run build && npx typeorm",

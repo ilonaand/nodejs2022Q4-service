@@ -11,7 +11,7 @@ COPY ./tsconfig.build.json ./
 
 
 # Install our dependencies
-RUN  npm install --legacy-peer-deps
+RUN  npm install --force
 #RUN npm run build
 
 # Create app directory

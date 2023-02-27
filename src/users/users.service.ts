@@ -3,7 +3,6 @@ import { CreateUserDto, UpdatePasswordDto } from './dto/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entity/users.entity';
-import { compare } from 'bcrypt';
 
 import { ReceivedUserDto } from './dto/user.interface';
 import { validate } from 'uuid';
@@ -53,8 +52,7 @@ export class UsersService {
     if (!user)
       throw new HttpException("user doesn't exist", HttpStatus.NOT_FOUND);
 
-    const isEqual = await compare(updatePasswordDto.oldPassword, user.password);
-    if (!isEqual)
+    if (updatePasswordDto.oldPassword !== user.password)
       throw new HttpException('oldPassword is wrong', HttpStatus.FORBIDDEN);
 
     Object.assign(user, { password: updatePasswordDto.newPassword });

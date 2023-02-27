@@ -1,4 +1,3 @@
-import { hash } from 'bcrypt';
 import { Exclude, Transform } from 'class-transformer';
 import {
   Column,
@@ -6,9 +5,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
   VersionColumn,
-  BeforeUpdate,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
@@ -34,9 +31,9 @@ export class UserEntity {
   @Column()
   password: string;
 
-  @BeforeInsert()
+  /* @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
     this.password = await hash(this.password, 10);
-  }
+  } */
 }

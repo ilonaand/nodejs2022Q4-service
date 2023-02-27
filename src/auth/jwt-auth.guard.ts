@@ -39,11 +39,8 @@ export class JwtAuthGuard implements CanActivate {
           message: 'User is requiered authorization',
         });
       }
-
-      const user = this.jwtService.verify(token);
-      req.user = user;
       return true;
-    } catch (err) {
+    } catch (error) {
       throw new ForbiddenException({
         message: 'User is requiered authorization',
       });
