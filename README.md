@@ -9,64 +9,29 @@
 
 ```
 git clone {repository URL}
-```
-
-## Installing NPM modules
 
 ```
-npm install
-```
+## Choose branch
 
-## Running application
+Choose branch Dev4
 
-```
-npm start
-```
+Run npm install
 
-After starting the app on port (4000 as default) you can open
-in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
+### Authentication and Authorization
 
-## Testing
+    - To deploy the application and the database to docker, run npm run docker:build
 
-After application running open new terminal and enter:
+    - Run npm run docker:stop to stop the containers
 
-To run all tests without authorization
+    - Run npm run docker:start to start the containers
 
-```
-npm run test
-```
+    - Run npm run docker:test:auth to run the e2e tests inside the docker
 
-To run only one of all test suites
+    - Run npm run test:auth to run the e2e tests
 
-```
-npm run test -- <path to suite>
-```
+    - The application is running on port 4000
 
-To run all test with authorization
+    - The postgres database is running on port 5432
 
-```
-npm run test:auth
-```
+  
 
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
-```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging

@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  webapp:
+    image: ilonaand/server_image
+    container_name: server
+    restart: always
+    env_file: .env
+    build: .
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - TYPEORM_USERNAME=${TYPEORM_USERNAME}
+      - TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
+      - TYPEORM_DATABASE=${TYPEORM_DATABASE}
+    volumes:
+      - ./src:/app/src
+    networks:
+      - app_bridge
+
+    # Сервис будет запущен, только после старта db
+    depends_on:
+     - db
+
+  # database
+  db:
+    container_name: db
+      # Имя образа. Здесь мы используем базу данных Postgres
+    image: ilonaand/posrgres
+    restart: always
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${TYPEORM_USERNAME}
+      - POSTGRES_PASSWORD=${TYPEORM_PASSWORD}
+      - POSTGRES_DB=${TYPEORM_DATABASE}
+    build: ./src/database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - ${TYPEORM_PORT}:${TYPEORM_PORT}
+    networks:
+      - app_bridge
+
+networks:
+  app_bridge:
+    driver: bridge
+    name: 'app_bridge'
+volumes:
+  pgdata:
