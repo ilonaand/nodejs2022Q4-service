@@ -1,4 +1,4 @@
-import { Exclude, Transform } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import {
   Column,
   Entity,
@@ -19,17 +19,29 @@ export class UserEntity {
   @VersionColumn()
   version: number;
 
-  @CreateDateColumn()
-  @Transform(({ value }) => new Date(value).getTime())
+  @CreateDateColumn({
+    transformer: {
+      from: (value: Date) => value.getTime(),
+      to: (value: Date) => value,
+    },
+  })
   createdAt: number;
-
-  @UpdateDateColumn()
-  @Transform(({ value }) => new Date(value).getTime())
+  @UpdateDateColumn({
+    transformer: {
+      from: (value: Date) => value.getTime(),
+      to: (value: Date) => value,
+    },
+  })
   updatedAt: number;
 
   @Exclude()
   @Column()
   password: string;
+
+  toResponse() {
+    const { id, login, version, createdAt, updatedAt } = this;
+    return { id, login, version, createdAt, updatedAt };
+  }
 
   /* @BeforeInsert()
   @BeforeUpdate()

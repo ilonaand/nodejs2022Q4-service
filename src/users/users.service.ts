@@ -14,18 +14,28 @@ export class UsersService {
     private usersRepository: Repository<UserEntity>,
   ) {}
 
-  async create(userDto: CreateUserDto): Promise<UserEntity> {
+  async create(userDto: CreateUserDto) {
+    const { login, password } = userDto;
+    if (
+      !(
+        login &&
+        password &&
+        typeof login === 'string' &&
+        typeof password === 'string'
+      )
+    )
+      throw new HttpException("password doesn't exist", HttpStatus.BAD_REQUEST);
     const newUser = new UserEntity();
     Object.assign(newUser, userDto);
 
-    return await this.usersRepository.save(newUser);
+    return (await this.usersRepository.save(newUser)).toResponse();
   }
 
   async findAll(): Promise<ReceivedUserDto[]> {
     return this.usersRepository.find();
   }
 
-  async findOne(id: string): Promise<UserEntity> {
+  async findOne(id: string) {
     if (!validate(id))
       throw new HttpException(
         'userId is invalid (not uuid)',
@@ -38,10 +48,7 @@ export class UsersService {
     return user;
   }
 
-  async updateById(
-    id: string,
-    updatePasswordDto: UpdatePasswordDto,
-  ): Promise<UserEntity> {
+  async updateById(id: string, updatePasswordDto: UpdatePasswordDto) {
     if (!validate(id))
       throw new HttpException(
         'userId is invalid (not uuid)',
@@ -57,7 +64,7 @@ export class UsersService {
 
     Object.assign(user, { password: updatePasswordDto.newPassword });
 
-    return await this.usersRepository.save(user);
+    return (await this.usersRepository.save(user)).toResponse();
   }
 
   async deleteById(id: string) {
